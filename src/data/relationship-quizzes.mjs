@@ -63,5 +63,20 @@ const date=make('date-style',['Date Night Quiz for Couples','约会偏好测试'
  ['You choose a weekend activity based on…','选择周末活动时，你更看重……',['A little novelty.','How restful it feels.','Something to do together.','Space to connect through talking.'],['有一点新鲜感。','能不能让人放松。','能不能一起动手参与。','有没有聊天交流的空间。']],
  ['What would make you say “let us do that again”?','什么最容易让你说“下次再来”？',['There is more to discover.','We both felt at ease.','We enjoyed making it together.','We felt more curious about each other.'],['还有更多可以探索。','我们都感到自在。','我们享受一起做的过程。','我们对彼此多了一点好奇。']]
  ]);
+const discussion={
+ pause:['How long would a useful pause last, and how shall we agree to return?','暂停多久对你有帮助？我们怎样确认会回来继续谈？','An unexplained break can feel like withdrawal. Agree when and how to return.','没有说明的暂停容易被理解为疏远。说好何时、怎样回来。'],
+ listen:['What would help you feel heard before we look for a solution?','找办法之前，怎样的回应会让你感觉被听见？','Listening can become repeating feelings without making a needed decision. Check when both people are ready for a next step.','只反复谈感受也可能让必要的决定停滞。确认双方何时准备好推进。'],
+ clarify:['Which assumption should we check instead of treating it as a fact?','哪一个推测值得先核对，而不是直接当成事实？','Fact-checking every detail can sound like cross-examination. Ask one question and acknowledge the feeling too.','追问每个细节容易像盘问。一次问一个问题，也回应对方的感受。'],
+ plan:['What is one small change we both want to try, and when shall we review it?','有什么双方都愿意的小改变？我们何时一起回顾？','A quick solution can arrive before the hurt has been heard. Check that the plan feels welcome.','解决办法可能来得比理解更快。先确认对方愿意接受这个安排。'],
+ impact:['What part of the impact would you most want me to understand?','这件事带来的影响里，你最想让我理解的是哪部分？','Feeling understood does not require the other person to guess every detail. Offer one concrete example.','被理解不等于让对方猜出所有细节。可以给一个具体例子。'],
+ ownership:['What would taking responsibility sound like, without shifting blame?','不转移责任地承认自己的部分，听起来会是什么样？','A perfectly worded apology is not proof of change. Notice actions as well as words.','说得漂亮不代表已经改变。除了措辞，也观察后续行动。'],
+ repair:['Which practical repair would actually help, and which would feel imposed?','什么实际修复对你有帮助？哪些做法反而像被强加？','A practical repair cannot buy forgiveness or erase feelings. Acceptance remains optional.','弥补不能购买原谅，也不能抹去感受。是否接受，仍可自由选择。'],
+ change:['What small, observable change would help rebuild trust over time?','哪一个看得见的小改变，能在一段时间里帮助重建信任？','Monitoring every action can become exhausting. Agree a realistic boundary and review time.','盯住每一个动作会让人疲惫。商量现实的边界和回顾时间。'],
+ explore:['What is a small new experience we would both freely choose this week?','这周有什么新鲜的小体验，是我们都愿意选择的？','Novelty is not equally comfortable for everyone. Offer a familiar alternative and an easy way to decline.','新鲜事不一定让每个人都自在。也提供熟悉的选择，允许拒绝。'],
+ unwind:['What helps quiet time feel connected rather than simply spent in the same room?','怎样的安静相处，会让你觉得有连接，而不只是同处一室？','Rest can leave an activity-seeking partner unsure whether you want time together. Make your intention explicit.','想休息时，对方可能不确定你是否愿意相处。把心意说清楚。'],
+ make:['What could we enjoy making even if neither of us is good at it?','有什么东西，即使我们都不擅长，也愿意一起做？','A shared activity can turn into a performance or a task. Leave room for mistakes and stopping.','共同活动容易变成比赛或任务。给出错和中途停止留空间。'],
+ talk:['Which light question would you enjoy, and which topics would you rather pass on today?','今天你愿意聊什么轻松的问题？哪些话题想先跳过？','A meaningful conversation does not need constant disclosure. Respect quiet and unanswered questions.','有意义的交流不需要不断袒露自己。也尊重安静和暂不回答。']
+};
+for(const pair of [conflict,apology,date])for(const key of Object.keys(pair.en.profiles)){const [en,zh,stretch,cs]=discussion[key];pair.en.profiles[key].conversation=en;pair.zh.profiles[key].conversation=zh;pair.en.profiles[key].stretch=stretch;pair.zh.profiles[key].stretch=cs;}
 export const relationshipQuizzes=[conflict.en,apology.en,date.en];
 export const zhRelationshipQuizzes=Object.fromEntries([conflict,apology,date].map(x=>[x.en.id,x.zh]));
