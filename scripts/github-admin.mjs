@@ -1,0 +1,10 @@
+// Uses the existing Git Credential Manager authorization without printing credentials.
+import {spawnSync} from 'node:child_process';
+const c=spawnSync('git',['credential','fill'],{input:'protocol=https\nhost=github.com\n\n',encoding:'utf8',env:{...process.env,GIT_TERMINAL_PROMPT:'0',GCM_INTERACTIVE:'never'}});
+const token=c.stdout?.split('\n').find(x=>x.startsWith('password='))?.slice(9).trim();if(!token)throw Error('GitHub authorization unavailable');
+const req=async(path,method='GET',body)=>{const r=await fetch('https://api.github.com'+path,{method,headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},...body?{body:JSON.stringify(body)}:{}});let value;try{value=await r.json();}catch{}return {status:r.status,value};};
+const repo='/repos/335083474/love-notes',mode=process.argv[2];
+if(mode==='create'){let result=await req(repo);if(result.status===404)result=await req('/user/repos','POST',{name:'love-notes',description:'Original bilingual relationship quizzes with free results, sharing and couples comparison.',private:false,has_issues:true,auto_init:false});if(![200,201].includes(result.status))throw Error('Repository setup failed: '+result.status);console.log(JSON.stringify({status:result.status,url:result.value.html_url,defaultBranch:result.value.default_branch}));}
+else if(mode==='pages'){let result=await req(repo+'/pages');if(result.status===404)result=await req(repo+'/pages','POST',{build_type:'workflow'});if(![200,201,204].includes(result.status))throw Error('Pages setup failed: '+result.status);console.log(JSON.stringify({status:result.status,url:result.value?.html_url,buildType:result.value?.build_type}));}
+else if(mode==='status'){const r=await req(repo+'/actions/runs?per_page=1');if(r.status!==200)throw Error('Status failed '+r.status);console.log(JSON.stringify(r.value.workflow_runs.map(x=>({id:x.id,sha:x.head_sha,status:x.status,conclusion:x.conclusion,url:x.html_url}))));}
+else throw Error('Expected create, pages or status');
