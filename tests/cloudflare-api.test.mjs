@@ -9,6 +9,19 @@ const model=async()=>new Response(JSON.stringify({choices:[{finish_reason:'stop'
 const request=(action,input={},token=a,extra={})=>new Request(api+'/api/studio/'+action,{method:'POST',headers:{Origin:web,Authorization:'Bearer '+token,'Content-Type':'application/json',...extra},body:JSON.stringify({locale:'zh',...input})});
 const envFor=DB=>({DB,WEB_ORIGIN:web,MINIMAX_API_KEY:'test-only',MINIMAX_MODEL:'MiniMax-M3',RATE_LIMIT_SALT:'test-only-rate-limit-salt',STUDIO_DAILY_CALL_LIMIT:'50'});
 
+test('invalid AI destinations get one real model repair, with both calls budgeted and no invented fallback',async t=>{
+ const DB=testD1();t.after(()=>DB.close());let calls=0;
+ const worker=createCloudApi({fetchModel:async()=>{calls++;const value=structuredClone(offers);if(calls===1)value.choices[0].id='not-in-this-catalog';return new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify(value)}}]}));}});
+ const response=await worker.fetch(request('chat',{message:'Help me understand relationships',consent:false}),envFor(DB));assert.equal(response.status,200);const result=await response.json();assert.equal(result.source,'minimax');assert.equal(calls,2);assert.equal(result.choices[0].id,'communication-style');
+ assert.equal(DB.raw.prepare('SELECT calls FROM ai_budget WHERE key=?').get('day:'+new Date().toISOString().slice(0,10)).calls,2);
+});
+
+test('repeated invalid AI replies fail closed after one repair and provider failures are not retried',async t=>{
+ const DB=testD1();t.after(()=>DB.close());let calls=0;const worker=createCloudApi({fetchModel:async()=>{calls++;const value=structuredClone(offers);value.choices[0].id='fake-link';return new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify(value)}}]}));}});
+ const result=await worker.fetch(request('chat',{message:'Need a relationship quiz'}),envFor(DB));assert.equal(result.status,503);assert.equal(calls,2);assert.equal((await result.json()).error,'studio_unavailable');
+ let providerCalls=0;const unavailable=createCloudApi({fetchModel:async()=>{providerCalls++;return new Response('{}',{status:503});}});const r=await unavailable.fetch(request('chat',{message:'Try a date quiz'},b),envFor(DB));assert.equal(r.status,503);assert.equal(providerCalls,1);
+});
+
 test('Cloudflare API permits only the configured frontend and bounded authenticated JSON requests',async t=>{
  const DB=testD1();t.after(()=>DB.close());let calls=0;const worker=createCloudApi({fetchModel:async()=>{calls++;return model();}}),env=envFor(DB);
  const preflight=await worker.fetch(new Request(api+'/api/studio/chat',{method:'OPTIONS',headers:{Origin:web,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type'}}),env);assert.equal(preflight.status,204);assert.equal(preflight.headers.get('access-control-allow-origin'),web);assert.equal(preflight.headers.get('access-control-allow-credentials'),null);
